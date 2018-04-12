@@ -27,8 +27,7 @@
 	"permissions": [
 		"tabs",
 		"<all_urls>",
-		"activeTab",
-		"debugger"
+		"activeTab"
 	],
 	"manifest_version": 2
 }
