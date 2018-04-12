@@ -1,6 +1,7 @@
 'use strict';
 
 import renderer from './renderer';
+import webrtcRenderer from './webrtcRenderer';
 
 var port = chrome.runtime.connect(null, { name : 'panel' });
 var tabId = chrome.devtools.inspectedWindow.tabId;
@@ -97,7 +98,12 @@ var comms = {
   GetMedia: function()
   {
     return PostAndPromiseJSON('get-media', 'got-media-info');
+  },
+  GetWebrtc: function()
+  {
+    return PostAndPromiseJSON('get-webrtc', 'got-webrtc-info');
   }
 }
 
 renderer.renderApp(comms);
+webrtcRenderer.renderWebrtcApp(comms);

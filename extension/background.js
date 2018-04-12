@@ -1,4 +1,7 @@
 var connections = {};
+var webrtc = {};
+webrtc['peerConns'] = {};
+webrtc['gums'] = {};
 
 chrome.runtime.onConnect.addListener(function(port) {
   /* console.log('New connection (chrome.runtime.onConnect) from',
@@ -40,7 +43,32 @@ chrome.runtime.onConnect.addListener(function(port) {
               });
             });
           break;
+        case 'get-webrtc':
+          port.postMessage({action : 'got-webrtc-info',
+                            value : JSON.stringify(webrtc, null, 2)
+                           });
+          break;
+        default:
+          break;
       }
+    } else if (name === 'webrtc-pc-api') {
+      let peerConns = webrtc['peerConns'];
+      if (msg.pcId !== undefined && !peerConns[msg.pcId]) {
+        peerConns[msg.pcId] = {};
+        peerConns[msg.pcId]['apiCallCnt'] = 0;
+        peerConns[msg.pcId]['apiCalls'] = [];
+      }
+      peerConns[msg.pcId]['apiCallCnt']++;
+      peerConns[msg.pcId]['apiCalls'].push(msg);
+    } else if (name === 'webrtc-gum-api') {
+      let gums = webrtc['gums'];
+      if (msg.pcId !== undefined && !gums[msg.pcId]) {
+        gums[msg.pcId] = {};
+        gums[msg.pcId]['apiCallCnt'] = 0;
+        gums[msg.pcId]['apiCalls'] = [];
+      }
+      gums[msg.pcId]['apiCallCnt']++;
+      gums[msg.pcId]['apiCalls'].push(msg);
     }
   }
 

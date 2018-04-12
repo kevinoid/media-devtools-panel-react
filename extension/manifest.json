@@ -17,6 +17,13 @@
 	"background": {
 		"scripts": [ "background.js" ]
 	},
+	"content_scripts": [ {
+		"js": [ "inject.js" ],
+		"matches": [ "https://*/*" ],
+		"all_frames": true,
+		"match_about_blank": true,
+		"run_at": "document_start"
+	} ],
 	"permissions": [
 		"tabs",
 		"<all_urls>",
