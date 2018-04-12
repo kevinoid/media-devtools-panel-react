@@ -17,7 +17,7 @@ chrome.runtime.onConnect.addListener(function(port) {
 
     if (msg.tabId)
       tabId = msg.tabId
-      else tabId = sender.sender.tab.id;
+    else tabId = sender.sender.tab.id;
 
     if (!connections[tabId])
       connections[tabId] = {};
