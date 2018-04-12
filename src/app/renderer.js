@@ -207,12 +207,16 @@ function RadioInput(props) {
 }
 
 function MediaElementSelector(props) {
-  return <RadioInput label={props.index.toString() +
-                            ": " + (props.name ? props.name : "?")
-                            + (props.alive ? (" " + (props.paused ? "⏸" : "▶️")
-                            + Math.round(props.time).toString()) : "😵")}
-                     selected={props.selected}
-                     onChange={() => props.selectMediaElement(props.index)} />
+  let playheadLabel = (props.paused ? "⏸" : "▶️")
+                      + Math.round(props.time).toString();
+  let elemLabel = props.index.toString() +
+                  ": " + (props.name ? props.name : "?") +
+                  " " + (props.alive ? playheadLabel : "😵");
+  return <div>
+           <RadioInput label={elemLabel}
+                       selected={props.selected}
+                       onChange={() => props.selectMediaElement(props.index)} />
+         </div>
   // return (
   //   <button onClick={() => props.selectMediaElement(props.index)}>
   //     {props.index.toString() +
