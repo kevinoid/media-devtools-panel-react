@@ -86,6 +86,14 @@ function FormatSetDescription(apiCall) {
 }
 
 
+function FormatGetStats(apiCall) {
+  let args = JSON.parse(apiCall['apiArgs']);
+  let key = apiCall['apiDate'] +
+            " " + apiCall['apiMethod'];
+
+  return [key, args];
+}
+
 function FormatWebRtcFunc(apiCall) {
   let key = undefined;
   let val = undefined;
@@ -93,6 +101,9 @@ function FormatWebRtcFunc(apiCall) {
     case 'setLocalDescription':
     case 'setRemoteDescription':
       [key, val] = FormatSetDescription(apiCall);
+      break;
+    case 'getStats':
+      [key, val] = FormatGetStats(apiCall);
       break;
     default:
       [key, val] = FormatDefaultApiCall(apiCall);
@@ -111,6 +122,7 @@ function FixKeyCollision(props) {
 
   return key;
 }
+
 
 function FormatApiCalls(apiCalls) {
   let out = {};
@@ -203,6 +215,67 @@ function TopBar(props) {
 }
 
 
+function CandidatePair(props) {
+  return (
+    <ReactJson src={ props.data }
+               name={ "PeerConnection " + props.name }
+               collapsed={false}
+               displayObjectSize={false}
+               displayDataTypes={false}
+               enableClipboard={false} />);
+}
+
+
+function CandidatePairs(props) {
+  let keys = Object.keys(props.data);
+
+  return (
+    <div>
+      {keys.length
+       ? keys.map(
+           key => <CandidatePair data={props.data[key]} name={key}/>)
+       : "no candidate pair data"
+      }
+    </div>);
+}
+
+
+function RtpRtcpStream(props) {
+  return (
+    <ReactJson src={ props.data }
+               name={ "PeerConnection " + props.name }
+               collapsed={false}
+               displayObjectSize={false}
+               displayDataTypes={false}
+               enableClipboard={false} />);
+}
+
+
+function RtpRtcpStreams(props) {
+  let keys = Object.keys(props.data);
+
+  return (
+    <div>
+      {keys.length
+       ? keys.map(
+           key => <RtpRtcpStream data={props.data[key]} name={key}/>)
+       : "no stream data"
+      }
+    </div>);
+}
+
+
+function LiveStats(props) {
+  return (
+    <div>
+      <h4>Candidate Pairs</h4>
+      <CandidatePairs data={ props.candidatePairs } />
+      <h4>RTP / RTCP Streams</h4>
+      <RtpRtcpStreams data={ props.rtpRtcpStreams } />
+    </div>);
+}
+
+
 class WebrtcPanelDisplay extends React.Component {
   constructor(props) {
     super(props);
@@ -233,6 +306,8 @@ class WebrtcPanelDisplay extends React.Component {
   gotData(returnedData) {
     // need to use setState to have changes register to be displayed
     this.setState({data:FormatData(returnedData),
+                   candidatePairs:returnedData['candidatePairs'],
+                   rtpRtcpStreams:returnedData['rtpRtcpStreams'],
                    refreshCnt:this.refreshNumber});
     this.requestDataLater();
   }
@@ -268,6 +343,8 @@ class WebrtcPanelDisplay extends React.Component {
       <div width="100%" height="100%" >
         <TopBar data={this.state.data}
                 refreshCnt={this.state.refreshCnt} />
+        <LiveStats candidatePairs={ this.state.candidatePairs || {} }
+                   rtpRtcpStreams={ this.state.rtpRtcpStreams || {} } />
       </div>
     );
   }

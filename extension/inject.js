@@ -11,6 +11,19 @@ var inject = '('+function() {
     window.postMessage(['WebRTC-Gum', id, method, JSON.stringify(args || {})], '*');
   }
 
+  // transforms a maplike to an object. Mostly for getStats +
+  // JSON.parse(JSON.stringify())
+  function map2obj(m) {
+    if (!m.entries) {
+      return m;
+    }
+    var o = {};
+    m.forEach(function(v, k) {
+      o[k] = v;
+    });
+    return o;
+  }
+
   if (!window.RTCPeerConnection) {
     return; // can happen e.g. when peerconnection is disabled in Firefox.
   }
@@ -56,6 +69,15 @@ var inject = '('+function() {
       newPeerConn.addEventListener('datachannel', function(event) {
         trace('ondatachannel', newPeerConn._id, [event.channel.id, event.channel.label]);
       });
+
+      window.setTimeout(function poll() {
+        if (newPeerConn.signalingState !== 'closed') {
+          window.setTimeout(poll, 1000);
+        }
+        newPeerConn.getStats().then(function(stats) {
+          trace('getStatsInternal', newPeerConn._id, map2obj(stats));
+        });
+      }, 1000);
 
       // Now that we've created a RTCPeerConnection and added listeners for
       // common events, we wrap the RTCPeerConnection in a proxy that tracks
