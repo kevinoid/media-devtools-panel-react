@@ -109,6 +109,12 @@ chrome.runtime.onConnect.addListener(function(port) {
                             value : JSON.stringify(webrtc, null, 2)
                            });
           break;
+        case 'clear-webrtc-data':
+          webrtc['peerConns'] = {};
+          webrtc['candidatePairs'] = {};
+          webrtc['rtpRtcpStreams'] = {};
+          webrtc['gums'] = {};
+          break;
         default:
           break;
       }

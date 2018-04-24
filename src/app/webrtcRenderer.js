@@ -284,6 +284,9 @@ class WebrtcPanelDisplay extends React.Component {
                   refreshCnt:0};
 
     this.refreshNumber = 0;
+
+    // This binding is necessary to make `this` work in callbacks
+    this.clearData = this.clearData.bind(this);
   }
 
   requestData() {
@@ -338,9 +341,20 @@ class WebrtcPanelDisplay extends React.Component {
 //     console.log(`componentDidUpdate() after ${Date.now() - this.updateStart}ms`);
   }
 
+  clearData() {
+    this.props.comms.ClearWebrtc();
+    // reset the local data so clear history button's action is obvious while
+    // we wait for the next regularly scheduled data request.
+    this.setState({data:{},
+                   candidatePairs:{},
+                   rtpRtcpStreams:{},
+                   refreshCnt:this.refreshNumber});
+  }
+
   render() {
     return (
       <div width="100%" height="100%" >
+        <input type="button" value="Clear History" onClick={this.clearData} />
         <TopBar data={this.state.data}
                 refreshCnt={this.state.refreshCnt} />
         <LiveStats candidatePairs={ this.state.candidatePairs || {} }

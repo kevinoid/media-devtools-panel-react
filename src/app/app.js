@@ -102,6 +102,10 @@ var comms = {
   GetWebrtc: function()
   {
     return PostAndPromiseJSON('get-webrtc', 'got-webrtc-info');
+  },
+  ClearWebrtc: function()
+  {
+    port.postMessage({ tabId: tabId, action: 'clear-webrtc-data' });
   }
 }
 
