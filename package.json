@@ -1,4 +1,12 @@
 {
+  "//": [
+    "Set private to true since we are not going to use 'npm publish'",
+    "and this squashes the following warnings when running the",
+    "the command 'npm install':",
+    "  npm WARN mjf-media-devtool No repository field.",
+    "  npm WARN mjf-media-devtool No license field."
+  ],
+  "private": true,
   "dependencies": {
     "babel-plugin-transform-object-rest-spread": "^6.26.0",
     "babel-preset-es2015": "^6.3.13",
