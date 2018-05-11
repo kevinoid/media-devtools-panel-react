@@ -37,13 +37,13 @@ chrome.runtime.onConnect.addListener(function(port) {
       let remote = args[arg['remoteCandidateId']];
       let bytesTx = arg['bytesSent'] || 0;
       let bytesRx = arg['bytesReceived'] || 0;
-      let pairStr = "candidate-pair (" + arg['id'] + ")" +
-                    " bytes (tx: " + bytesTx + 
-                    "   rx: " + bytesRx +
-                    ")" +
-                    " local: " + buildCandidateAddress(local) +
-                    " remote: " + buildCandidateAddress(remote);
-      candidatePairs[msg.pcId].push(pairStr);
+
+      candidatePairs[msg.pcId].push({id:arg['id'],
+                                     bytesTx:bytesTx,
+                                     bytesRx:bytesRx,
+                                     localCand:buildCandidateAddress(local),
+                                     remoteCand:buildCandidateAddress(remote)
+                                    });
     });
   }
 
@@ -56,21 +56,28 @@ chrome.runtime.onConnect.addListener(function(port) {
     Object.values(args)
       .filter(arg => arg['type'] == 'inbound-rtp')
       .forEach(arg => {
-      let streamStr = arg['type'] + " " + arg['mediaType'] +
-                      " (ssrc " + arg['ssrc'] + ")" +
-                      " bytes rx: " + arg['bytesReceived'] +
-                      " packets rx: " + arg['packetsReceived'] +
-                      " lost: " + arg['packetsLost'];
-      rtpRtcpStreams[msg.pcId].push(streamStr);
+      rtpRtcpStreams[msg.pcId].push({id:arg['type'],
+                                     mediaType:'in '+arg['mediaType'],
+                                     ssrc:arg['ssrc'],
+                                     bytesRx:arg['bytesReceived'],
+                                     pktsRx:arg['packetsReceived'],
+                                     bytesTx:'-',
+                                     pktsTx:'-',
+                                     pktsLost:arg['packetsLost']
+                                    });
     });
     Object.values(args)
       .filter(arg => arg['type'] == 'outbound-rtp')
       .forEach(arg => {
-      let streamStr = arg['type'] + " " + arg['mediaType'] +
-                      " (ssrc " + arg['ssrc'] + ")" +
-                      " bytes tx: " + arg['bytesSent'] +
-                      " packets tx: " + arg['packetsSent'];
-      rtpRtcpStreams[msg.pcId].push(streamStr);
+      rtpRtcpStreams[msg.pcId].push({id:arg['type'],
+                                     mediaType:'out '+arg['mediaType'],
+                                     ssrc:arg['ssrc'],
+                                     bytesRx:'-',
+                                     pktsRx:'-',
+                                     bytesTx:arg['bytesSent'],
+                                     pktsTx:arg['packetsSent'],
+                                     pktsLost:'-'
+                                    });
     });
   }
 

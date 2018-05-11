@@ -5,7 +5,10 @@ import React from 'react';
 import ReactDOM from 'react-dom';
 import ReactJson from 'react-json-view';
 import { AutoSizer, Column, Table } from 'react-virtualized';
-
+import ReactTable from 'react-table'; // from https://react-table.js.org
+// The following import fails to parse.  Until I figure out why, I've
+// copied the file into the extension directory and import in panel.html
+// import 'react-table/react-table.css';
 
 class TextInput extends React.Component {
   constructor(props) {
@@ -165,24 +168,30 @@ function FormatData(data) {
 
   Object.keys(peerConns).map(key => {
     let pc = peerConns[key];
-    let creationDate = " - " + (pc['apiCalls'][0]['apiDate'] || "no date");
-    let pcLabel = "PeerConnection " + key + creationDate;
+    let creationDate = pc['apiCalls'][0]['apiDate'] || "no date";
+    let pcLabel = "PeerConnection " + key + " - " + creationDate;
     pc['apiCalls'] = FormatApiCalls(pc['apiCalls']);
+    pc['id'] = key;
+    pc['date'] = creationDate;
+    pc['name'] = "PeerConnection";
     out[pcLabel] = pc;
   });
 
   Object.keys(gums).map(key => {
     let gum = gums[key];
-    let creationDate = " - " + (gum['apiCalls'][0]['apiDate'] || "no date");
-    let gumLabel = "GUM " + key + creationDate;
+    let creationDate = gum['apiCalls'][0]['apiDate'] || "no date";
+    let gumLabel = "GUM " + key + " - " + creationDate;
     gum['apiCalls'] = FormatApiCalls(gum['apiCalls']);
+    gum['id'] = key;
+    gum['date'] = creationDate;
+    gum['name'] = "GUM";
     out[gumLabel] = gum;
   });
 
   return out;
 }
 
-function PeerConnCurrentState(props) {
+function ApiCalls(props) {
   return(
     <ReactJson src={ props.data }
                name={ props.name }
@@ -193,85 +202,208 @@ function PeerConnCurrentState(props) {
 }
 
 
-function PeerConnections(props) {
+function PeerConnectionDetails(props) {
+  let rowId = props.rowId;
+  let apiCalls = props.apiCalls;
+  let candidatePairs = props.candidatePairs;
+  let rtpRtcpStreams = props.rtpRtcpStreams;
+
   return (
     <div>
-      {Object.keys(props.data).length
-       ? Object.keys(props.data).map(
-           key => <PeerConnCurrentState data={props.data[key]}
-                                           name={key} />)
-       : "no peer connections"
+      <em>
+        API info for PeerConnection {rowId}.
+      </em>
+      <br />
+      <br />
+      <ApiCalls data={apiCalls} name={rowId} />
+      <br />
+      <br />
+      <em>
+        Candidate pair info for PeerConnection {rowId}
+      </em>
+      <br />
+      <br />
+      <CandidatePairTable data={candidatePairs} name={rowId}/>
+      <br />
+      <br />
+      <em>
+        RTP/RTCP stream info for PeerConnection {rowId}
+      </em>
+      <br />
+      <br />
+      <RtpRtcpStreamTable data={rtpRtcpStreams} name={rowId}/>
+    </div>
+  );
+}
+
+
+function GumDetails(props) {
+  let rowId = props.rowId;
+  let apiCalls = props.apiCalls;
+
+  return (
+    <div>
+      <em>
+        API info for GUM {rowId}.
+      </em>
+      <br />
+      <br />
+      <ApiCalls data={apiCalls} name={rowId} />
+    </div>
+  );
+}
+
+
+class PeerConnTable extends React.Component {
+  constructor(props) {
+    super(props);
+  }
+
+  render() {
+    const columns = [
+      {
+        Header: "Creation Date",
+        accessor: "date",
+        width: 240
+      },
+      {
+        Header: "ID",
+        accessor: "id",
+        width: 120
+      },
+      {
+        Header: "Name",
+        accessor: "name"
       }
+    ];
+
+    return(
+        <ReactTable
+          columns={columns}
+          defaultSorted={[{id:"date", desc: true}]}
+          collapseOnSortingChange={false}
+          collapseOnPageChange={false}
+          collapseOnDataChange={false}
+          defaultPageSize={5}
+          className="-striped -highlight"
+          SubComponent={row => {
+            let rowId = row["original"]["id"];
+            let apiCalls = row["original"]["apiCalls"];
+            let candidatePairs = this.props.candidatePairs[rowId];
+            let rtpRtcpStreams = this.props.rtpRtcpStreams[rowId];
+            return (
+              <div style={{ padding: "20px" }}>
+                {row["original"]["name"] === "GUM"
+                 ? <GumDetails rowId={rowId} apiCalls={apiCalls} />
+                 : <PeerConnectionDetails rowId={rowId}
+                                          apiCalls={apiCalls}
+                                          candidatePairs={candidatePairs}
+                                          rtpRtcpStreams={rtpRtcpStreams} />
+                }
+              </div>
+            );
+          }}
+          data={this.props.rowData}
+        />
+    );
+  }
+}
+
+
+function CandidatePairTable(props) {
+  let list = props.data;
+  // always leave room for the header and at least one row, but not more than 9
+  let tableHeight = 30 * (1 + (Math.min(list.length, 9)));
+
+  return (
+    <div>
+      <AutoSizer disableHeight>
+        {({ width }) => (
+        <Table width={width * .99}
+               height={tableHeight}
+               headerHeight={20}
+               headerStyle={{textTransform: 'none'}} // defaults to all caps
+               rowHeight={30}
+               rowCount={list.length}
+               rowGetter={({ index }) => list[index]}
+               rowStyle={{borderBottom:'1px solid #e0e0e0'}}
+          >
+          <Column width={width * .10}
+                  label='Pair'
+                  dataKey='id'
+          />
+          <Column width={width * .10}
+                  label='Bytes Tx'
+                  dataKey='bytesTx'
+          />
+          <Column width={width * .10}
+                  label='Bytes Rx'
+                  dataKey='bytesRx'
+          />
+          <Column width={width * .35}
+                  label='Local'
+                  dataKey='localCand'
+          />
+          <Column width={width * .34}
+                  label='Remote'
+                  dataKey='remoteCand'
+          />
+        </Table>
+        )}
+      </AutoSizer>
     </div>);
 }
 
 
-function TopBar(props) {
-  return (
-    <div>
-      <h3>WebRTC Panel (refresh cnt {props.refreshCnt})</h3>
-      <PeerConnections data={ props.data } />
-    </div>);
-}
-
-
-function CandidatePair(props) {
-  return (
-    <ReactJson src={ props.data }
-               name={ "PeerConnection " + props.name }
-               collapsed={false}
-               displayObjectSize={false}
-               displayDataTypes={false}
-               enableClipboard={false} />);
-}
-
-
-function CandidatePairs(props) {
-  let keys = Object.keys(props.data);
+function RtpRtcpStreamTable(props) {
+  let list = props.data;
+  // always leave room for the header and at least one row, but not more than 9
+  let tableHeight = 30 * (1 + (Math.min(list.length, 9)));
 
   return (
     <div>
-      {keys.length
-       ? keys.map(
-           key => <CandidatePair data={props.data[key]} name={key}/>)
-       : "no candidate pair data"
-      }
-    </div>);
-}
-
-
-function RtpRtcpStream(props) {
-  return (
-    <ReactJson src={ props.data }
-               name={ "PeerConnection " + props.name }
-               collapsed={false}
-               displayObjectSize={false}
-               displayDataTypes={false}
-               enableClipboard={false} />);
-}
-
-
-function RtpRtcpStreams(props) {
-  let keys = Object.keys(props.data);
-
-  return (
-    <div>
-      {keys.length
-       ? keys.map(
-           key => <RtpRtcpStream data={props.data[key]} name={key}/>)
-       : "no stream data"
-      }
-    </div>);
-}
-
-
-function LiveStats(props) {
-  return (
-    <div>
-      <h4>Candidate Pairs</h4>
-      <CandidatePairs data={ props.candidatePairs } />
-      <h4>RTP / RTCP Streams</h4>
-      <RtpRtcpStreams data={ props.rtpRtcpStreams } />
+      <AutoSizer disableHeight>
+        {({ width }) => (
+        <Table width={width * .99}
+               height={tableHeight}
+               headerHeight={20}
+               headerStyle={{textTransform: 'none'}} // defaults to all caps
+               rowHeight={30}
+               rowCount={list.length}
+               rowGetter={({ index }) => list[index]}
+               rowStyle={{borderBottom:'1px solid #e0e0e0'}}
+          >
+          <Column width={width * .10}
+                  label='Media Type'
+                  dataKey='mediaType'
+          />
+          <Column width={width * .15}
+                  label='SSRC'
+                  dataKey='ssrc'
+          />
+          <Column width={width * .10}
+                  label='Bytes Tx'
+                  dataKey='bytesTx'
+          />
+          <Column width={width * .10}
+                  label='Packets Tx'
+                  dataKey='pktsTx'
+          />
+          <Column width={width * .10}
+                  label='Bytes Rx'
+                  dataKey='bytesRx'
+          />
+          <Column width={width * .10}
+                  label='Packets Rx'
+                  dataKey='pktsRx'
+          />
+          <Column width={width * .10}
+                  label='Packets Lost'
+                  dataKey='pktsLost'
+          />
+        </Table>
+        )}
+      </AutoSizer>
     </div>);
 }
 
@@ -352,13 +484,19 @@ class WebrtcPanelDisplay extends React.Component {
   }
 
   render() {
+    let refreshCnt = this.state.refreshCnt;
+    let peerConns = this.state.data;
+    let candidatePairs = this.state.candidatePairs || {};
+    let rtpRtcpStreams = this.state.rtpRtcpStreams || {};
+    let propsDataArr = Object.keys(peerConns).map(key => peerConns[key]);
+
     return (
       <div width="100%" height="100%" >
         <input type="button" value="Clear History" onClick={this.clearData} />
-        <TopBar data={this.state.data}
-                refreshCnt={this.state.refreshCnt} />
-        <LiveStats candidatePairs={ this.state.candidatePairs || {} }
-                   rtpRtcpStreams={ this.state.rtpRtcpStreams || {} } />
+        <h3>WebRTC Info (refresh cnt { refreshCnt })</h3>
+        <PeerConnTable rowData={ propsDataArr }
+                       candidatePairs={ candidatePairs }
+                       rtpRtcpStreams={ rtpRtcpStreams } />
       </div>
     );
   }
