@@ -510,14 +510,4 @@ class WebrtcPanelDisplay extends React.Component {
 
 
 // EXPORT MODULE
-const webrtcRenderer = {};
-module.exports = webrtcRenderer;
-
-const renderWebrtcApp = (comms) => {
-  ReactDOM.render(<WebrtcPanelDisplay comms={comms} />,
-                  document.getElementById('webrtcpanel'));
-};
-
-// rendering
-webrtcRenderer.renderWebrtcApp = renderWebrtcApp;
-
+module.exports = WebrtcPanelDisplay;

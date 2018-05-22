@@ -1,7 +1,6 @@
 'use strict';
 
-import mediaRenderer from './mediaRenderer';
-import webrtcRenderer from './webrtcRenderer';
+import tabRenderer from './tabRenderer';
 
 var port = chrome.runtime.connect(null, { name : 'panel' });
 var tabId = chrome.devtools.inspectedWindow.tabId;
@@ -109,5 +108,4 @@ var comms = {
   }
 }
 
-mediaRenderer.renderApp(comms);
-webrtcRenderer.renderWebrtcApp(comms);
+tabRenderer.renderTabApp(comms);

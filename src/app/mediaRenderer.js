@@ -496,13 +496,4 @@ class MediaPanelDisplay extends React.Component {
 }
 
 // EXPORT MODULE
-const mediaRenderer = {};
-module.exports = mediaRenderer;
-
-const renderApp = (comms) => {
-  ReactDOM.render(<MediaPanelDisplay comms={comms} />,
-                  document.getElementById('mediapanel'));
-};
-
-// rendering
-mediaRenderer.renderApp = renderApp;
+module.exports = MediaPanelDisplay;
