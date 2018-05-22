@@ -2,9 +2,9 @@
 
 https://addons.mozilla.org/en-US/firefox/addon/devtools-media-panel/
 
-This a web extension adaption of the aboutmedia addon https://github.com/jyavenard/aboutmedia
+This a web extension adaption of the aboutmedia addon https://github.com/jyavenard/aboutmedia with additions for webrtc.
 
-It creates a new 'Media' tab in the Firefox developer tools panel - currently supported in Firefox 54+
+It creates a new 'Media-Webrtc' tab in the Firefox developer tools panel - currently supported in Firefox 54+
 
 Instructions for installing manually:
 
@@ -16,4 +16,4 @@ Instructions for installing manually:
 6. Open any file in this directory
 7. There should be a new 'Media Panel' addon listed under 'Extensions'
 8. Navigate to page with video element and/or webrtc and open developer tools (F12)
-9. There should be a new 'Media' tab
+9. There should be a new 'Media-Webrtc' tab
