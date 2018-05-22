@@ -313,7 +313,10 @@ class PeerConnTable extends React.Component {
 function CandidatePairTable(props) {
   let list = props.data;
   // always leave room for the header and at least one row, but not more than 9
-  let tableHeight = 30 * (1 + (Math.min(list.length, 9)));
+  let headerHeight = 35;
+  let rowHeight = 30;
+  let tableHeight = headerHeight
+                    + (rowHeight * (1 + (Math.min(list.length, 9))));
 
   return (
     <div>
@@ -321,9 +324,9 @@ function CandidatePairTable(props) {
         {({ width }) => (
         <Table width={width * .99}
                height={tableHeight}
-               headerHeight={20}
+               headerHeight={headerHeight}
                headerStyle={{textTransform: 'none'}} // defaults to all caps
-               rowHeight={30}
+               rowHeight={rowHeight}
                rowCount={list.length}
                rowGetter={({ index }) => list[index]}
                rowStyle={{borderBottom:'1px solid #e0e0e0'}}
@@ -358,7 +361,10 @@ function CandidatePairTable(props) {
 function RtpRtcpStreamTable(props) {
   let list = props.data;
   // always leave room for the header and at least one row, but not more than 9
-  let tableHeight = 30 * (1 + (Math.min(list.length, 9)));
+  let headerHeight = 35;
+  let rowHeight = 30;
+  let tableHeight = headerHeight
+                    + (rowHeight * (1 + (Math.min(list.length, 9))));
 
   return (
     <div>
@@ -366,9 +372,9 @@ function RtpRtcpStreamTable(props) {
         {({ width }) => (
         <Table width={width * .99}
                height={tableHeight}
-               headerHeight={20}
+               headerHeight={headerHeight}
                headerStyle={{textTransform: 'none'}} // defaults to all caps
-               rowHeight={30}
+               rowHeight={rowHeight}
                rowCount={list.length}
                rowGetter={({ index }) => list[index]}
                rowStyle={{borderBottom:'1px solid #e0e0e0'}}

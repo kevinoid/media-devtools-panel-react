@@ -360,6 +360,11 @@ class MediaElementLog extends React.Component {
       log = [{val: "No messages to show"}];
     }
 
+    let headerHeight = 35;
+    let rowHeight = 30;
+    let tableHeight = headerHeight
+                      + (rowHeight * (1 + log.length));
+
     return (
       <div>
         <div>
@@ -373,9 +378,9 @@ class MediaElementLog extends React.Component {
         <AutoSizer disableHeight>
           {({ width }) => (
             <Table width={width * .99}
-                   height={300}
-                   headerHeight={20}
-                   rowHeight={30}
+                   height={tableHeight}
+                   headerHeight={headerHeight}
+                   rowHeight={rowHeight}
                    rowCount={log.length}
                    rowGetter={({ index }) => log[index]} >
               <Column width={width * .10}
