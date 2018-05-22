@@ -5,7 +5,6 @@ import React from 'react';
 import ReactDOM from 'react-dom';
 import ReactJson from 'react-json-view';
 import { AutoSizer, Column, Table } from 'react-virtualized';
-import ReactTable from 'react-table';
 
 function beautifyMessages(messages, objects) {
   return messages.map(function(message) {
@@ -207,62 +206,47 @@ function RadioInput(props) {
     </label>);
 }
 
-class MediaElementTable extends React.Component {
-  constructor(props) {
-    super(props);
-  }
+function MediaElementSelector(props) {
+  let playheadLabel = (props.paused ? "⏸" : "▶️")
+                      + Math.round(props.time).toString();
+  let elemLabel = props.index.toString() +
+                  ": " + (props.name ? props.name : "?") +
+                  " " + (props.alive ? playheadLabel : "😵");
+  return <div>
+           <RadioInput label={elemLabel}
+                       selected={props.selected}
+                       onChange={() => props.selectMediaElement(props.index)} />
+         </div>
+  // return (
+  //   <button onClick={() => props.selectMediaElement(props.index)}>
+  //     {props.index.toString() +
+  //      ": " + (props.name ? props.name : "?")
+  //      + (props.alive ? (" " + (props.paused ? "⏸" : "▶️") + Math.round(props.time).toString()) : "😵")}
+  //   </button>);
+}
 
-  render() {
-    const columns = [
-      {
-        Header: "Status",
-        accessor: "status",
-        width: 60
-      },
-      {
-        Header: "Time",
-        accessor: "currentTime",
-        width: 60
-      },
-      {
-        Header: "Name",
-        accessor: "name"
-      }
-    ];
+function MediaElementSelectors(props) {
+  return (
+    <div>
+      {props.data.length > 0
+       ? props.data.map(
+           me => <MediaElementSelector key={me.index.toString()}
+                                       index={me.index}
+                                       name={me.name ? me.name : "?"}
+                                       alive={me.alive}
+                                       paused={me.state.HTMLMediaElement.paused}
+                                       time={me.state.HTMLMediaElement.currentTime}
+                                       selected={props.selected === me.index}
+                                       selectMediaElement={props.selectMediaElement} />)
+       : "No media"}
+    </div>);
+}
 
-    let list = this.props.rowData.map(mediaElem => {
-      let paused = mediaElem.state.HTMLMediaElement.paused;
-      let status = mediaElem.alive?(paused ? "⏸" : "▶️"):"😵";
-      let time = Math.round(mediaElem.state.HTMLMediaElement.currentTime);
-      return Object.assign(mediaElem, {status:status,
-                                       currentTime:time
-                                      });
-    });
-
-    return(
-      <ReactTable
-        columns={columns}
-        defaultSorted={[{id:"status", desc: false}]}
-        collapseOnSortingChange={false}
-        collapseOnPageChange={false}
-        collapseOnDataChange={false}
-        defaultPageSize={5}
-        className="-striped -highlight"
-        data={list}
-        SubComponent={row => {
-          return (
-            <div style={{ padding: "20px" }}>
-              <MediaElementCurrentState data={ row["original"]["state"] } />
-              <br />
-              <em>MediaElement log</em>
-              <br />
-              <MediaElementLog log={ row["original"]["log"] } />
-            </div>
-          );
-        }}
-      />
-    );
-  }
+function TopBar(props) {
+  return (
+    <div>
+      <MediaElementSelectors data={props.data} selected={props.selected} selectMediaElement={props.selectMediaElement} />
+    </div>);
 }
 
 function MediaElementCurrentState(props) {
@@ -361,11 +345,6 @@ class MediaElementLog extends React.Component {
       log = [{val: "No messages to show"}];
     }
 
-    let headerHeight = 35;
-    let rowHeight = 30;
-    let tableHeight = headerHeight
-                      + (rowHeight * (1 + log.length));
-
     return (
       <div>
         <div>
@@ -379,9 +358,9 @@ class MediaElementLog extends React.Component {
         <AutoSizer disableHeight>
           {({ width }) => (
             <Table width={width * .99}
-                   height={tableHeight}
-                   headerHeight={headerHeight}
-                   rowHeight={rowHeight}
+                   height={300}
+                   headerHeight={20}
+                   rowHeight={30}
                    rowCount={log.length}
                    rowGetter={({ index }) => log[index]} >
               <Column width={width * .10}
@@ -488,8 +467,14 @@ class MediaPanelDisplay extends React.Component {
   render() {
     return (
       <div width="100%" height="100%" >
-        <h3>Media Elements</h3>
-        <MediaElementTable rowData={ this.state.data } />
+        <TopBar data={this.state.data}
+                selected={this.state.selected}
+                selectMediaElement={this.selectMediaElement} />
+        { this.state.selected >= 0 &&
+          <MediaElementCurrentState
+           data={ this.state.data[this.state.selected].state } /> }
+        { this.state.selected >= 0 &&
+          <MediaElementLog log={ this.state.data[this.state.selected].log } /> }
       </div>
     );
   }
