@@ -311,7 +311,7 @@ class PeerConnTable extends React.Component {
 
 
 function CandidatePairTable(props) {
-  let list = props.data;
+  let list = props.data || [];
   // always leave room for the header and at least one row, but not more than 9
   let headerHeight = 35;
   let rowHeight = 30;
@@ -359,7 +359,7 @@ function CandidatePairTable(props) {
 
 
 function RtpRtcpStreamTable(props) {
-  let list = props.data;
+  let list = props.data || [];
   // always leave room for the header and at least one row, but not more than 9
   let headerHeight = 35;
   let rowHeight = 30;
