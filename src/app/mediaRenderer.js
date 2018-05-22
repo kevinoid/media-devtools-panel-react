@@ -242,6 +242,7 @@ class MediaElementTable extends React.Component {
     return(
       <ReactTable
         columns={columns}
+        defaultSorted={[{id:"status", desc: false}]}
         collapseOnSortingChange={false}
         collapseOnPageChange={false}
         collapseOnDataChange={false}
