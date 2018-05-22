@@ -403,7 +403,7 @@ class MediaElementLog extends React.Component {
   }
 }
 
-class PanelDisplay extends React.Component {
+class MediaPanelDisplay extends React.Component {
   constructor(props) {
     super(props);
 
@@ -490,13 +490,13 @@ class PanelDisplay extends React.Component {
 }
 
 // EXPORT MODULE
-const renderer = {};
-module.exports = renderer;
+const mediaRenderer = {};
+module.exports = mediaRenderer;
 
 const renderApp = (comms) => {
-  ReactDOM.render(<PanelDisplay comms={comms} />,
-                  document.getElementById('panel'));
+  ReactDOM.render(<MediaPanelDisplay comms={comms} />,
+                  document.getElementById('mediapanel'));
 };
 
 // rendering
-renderer.renderApp = renderApp;
+mediaRenderer.renderApp = renderApp;

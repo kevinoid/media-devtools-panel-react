@@ -1,6 +1,6 @@
 'use strict';
 
-import renderer from './renderer';
+import mediaRenderer from './mediaRenderer';
 import webrtcRenderer from './webrtcRenderer';
 
 var port = chrome.runtime.connect(null, { name : 'panel' });
@@ -109,5 +109,5 @@ var comms = {
   }
 }
 
-renderer.renderApp(comms);
+mediaRenderer.renderApp(comms);
 webrtcRenderer.renderWebrtcApp(comms);
