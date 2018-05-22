@@ -1,4 +1,4 @@
-chrome.devtools.panels.create("Media", "images/icon-128.png", "panel.html");
+chrome.devtools.panels.create("Media-Webrtc", "images/icon-128.png", "panel.html");
 
 var port = chrome.runtime.connect(null, { name : `devtools` });
 var tabId = chrome.devtools.inspectedWindow.tabId;
