@@ -6,6 +6,14 @@ This a web extension adaption of the aboutmedia addon https://github.com/jyavena
 
 It creates a new 'Media-Webrtc' tab in the Firefox developer tools panel - currently supported in Firefox 54+
 
+Instructions for building for release:
+1. Run 'npm install'.
+2. Run './browserify_production.sh'
+
+Instructions for building for development:
+1. Run 'npm install'.
+2. Run './watchify_bundle.sh'
+
 Instructions for installing manually:
 
 1. Clone/download repo
@@ -17,3 +25,4 @@ Instructions for installing manually:
 7. There should be a new 'Media Panel' addon listed under 'Extensions'
 8. Navigate to page with video element and/or webrtc and open developer tools (F12)
 9. There should be a new 'Media-Webrtc' tab
+
