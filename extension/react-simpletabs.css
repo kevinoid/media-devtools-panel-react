@@ -1,6 +1,9 @@
+.tabs {
+  margin-top: -8px;
+}
 .tabs-navigation {
   padding: 0 20px;
-  max-height: 50px;
+  max-height: 30px;
   border-bottom: 1px solid #ddd;
 }
 .tabs-menu {
@@ -15,8 +18,8 @@
 .tabs-menu-item a {
   display: block;
   padding: 0 20px;
-  height: 50px;
-  line-height: 50px;
+  height: 30px;
+  line-height: 30px;
   border-bottom: 0;
   color: #a9a9a9;
 }
