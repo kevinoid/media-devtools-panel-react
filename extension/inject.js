@@ -99,6 +99,25 @@ var inject = '('+function() {
                             (pc._fnProxies[key] = new Proxy(member, {
             apply(func, thisArg, argumentsList) {
               trace(key, pc._id, argumentsList);
+              // We special case createOffer and createAnswer because we
+              // want to record the results of the promise.  We build a
+              // new promise to wrap the output of the
+              // createOffer/createAnswer call and then call resolve or
+              // reject based on the result of the original promise.
+              if (key == 'createOffer' || key == 'createAnswer') {
+                 return new Promise(function(resolve, reject) {
+                  func.apply(pc, argumentsList)
+                    .then(result => {
+                            trace(key + 'OnSuccess', pc._id, result);
+                            resolve(result);
+                          },
+                          error => {
+                            trace(key + 'OnFailure', pc._id, error.toString());
+                            reject(error);
+                          });
+                });
+              }
+
               return func.apply(pc, argumentsList);
             }
           }));

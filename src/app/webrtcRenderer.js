@@ -75,6 +75,21 @@ function FormatDefaultApiCall(apiCall) {
 }
 
 
+function FormatCreateOfferAnswerResponse(apiCall) {
+  let key = apiCall['apiDate'] +
+            " " + apiCall['apiMethod'];
+  let val = "(" + apiCall['apiArgs'] + ")"; // in case we get an empty response
+
+  let response = JSON.parse(apiCall['apiArgs']);
+  if (Object.getOwnPropertyNames(response).length > 0) {
+    val = response;
+    response['sdp'] = response['sdp'].split("\r\n");
+  }
+
+  return [key, val];
+}
+
+
 function FormatSetDescription(apiCall) {
   let args = JSON.parse(apiCall['apiArgs'])[0];
   let key = apiCall['apiDate'] +
@@ -101,6 +116,10 @@ function FormatWebRtcFunc(apiCall) {
   let key = undefined;
   let val = undefined;
   switch (apiCall['apiMethod']) {
+    case 'createOfferOnSuccess':
+    case 'createAnswerOnSuccess':
+      [key, val] = FormatCreateOfferAnswerResponse(apiCall);
+      break;
     case 'setLocalDescription':
     case 'setRemoteDescription':
       [key, val] = FormatSetDescription(apiCall);
