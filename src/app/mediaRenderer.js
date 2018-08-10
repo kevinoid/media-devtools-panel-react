@@ -135,8 +135,6 @@ function analyzeData(prevData, data)
           // yet associated with this element.)
           oldMediaElement.log = oldMediaElement.log.concat(beautifyMessages(messages, objects));
           oldMediaElement.log.sort((a,b) => a.i < b.i ? -1 : a.i === b.i ? 0 : 1)
-          // Completely update the log objects.
-          oldMediaElement.objects = objects;
         } else {
           reusedWithoutLog++;
         }
