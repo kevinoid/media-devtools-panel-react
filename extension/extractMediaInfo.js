@@ -204,6 +204,15 @@
         mediaElementInfo.debugInfo = v.mozDebugReaderData;
 
       }
+
+      if ("mozRequestDebugLog" in v) {
+        const waitForMediaElementInfo =
+          v.mozRequestDebugLog().then(JSONDebugInfo => {
+            mediaElementInfo.debugLogJSON = JSONDebugInfo;
+          });
+
+        waitForMediaElements.push(waitForMediaElementInfo);
+      }
     }
 
     return Promise.all(waitForMediaElements).then(() => {
@@ -226,6 +235,10 @@
       }
     }
     return videos;
+  }
+
+  if ("mozEnableDebugLog" in HTMLMediaElement) {
+    HTMLMediaElement.mozEnableDebugLog();
   }
 
   var media = getVideos(document);
