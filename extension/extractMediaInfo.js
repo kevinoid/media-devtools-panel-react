@@ -207,8 +207,23 @@
 
       if ("mozRequestDebugLog" in v) {
         const waitForMediaElementInfo =
-          v.mozRequestDebugLog().then(JSONDebugInfo => {
-            mediaElementInfo.debugLogJSON = JSONDebugInfo;
+          v.mozRequestDebugLog().then(JSONDebugLog => {
+console.log("received debugLog length: " + JSONDebugLog.length)
+            try {
+              let debugLogObjects = JSON.parse(JSONDebugLog || "{}").objects;
+console.log("debugLog objects.keys length: " + Object.keys(debugLogObjects).length);
+console.log("debugLog messages.keys length: " + Object.keys(JSON.parse(JSONDebugLog || "{}").messages).length);
+              // Object number "1" should be the HTMLMediaElement, use
+              // its pointer and construction timestamp to uniquely
+              // identify the element and create a debugLogId.
+              mediaElementInfo.debugLogId =
+                  debugLogObjects["1"] ? (debugLogObjects["1"].ptr + "@"
+                                          + debugLogObjects["1"].con_ts.toString())
+                                       : "";
+
+            } catch (err) {
+              console.log(`Error '${err.toString()} in JSON.parse(${JSONDebugLog})`);
+            }
           });
 
         waitForMediaElements.push(waitForMediaElementInfo);

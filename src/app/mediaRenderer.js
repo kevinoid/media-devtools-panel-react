@@ -34,12 +34,10 @@ function analyzeData(prevData, data)
 {
   let start = Date.now();
 
-  let before = prevData.length;
-  console.log(`before: ${before}`);
-  let reusedWithLog = 0;
-  let reusedWithoutLog = 0;
-  let created = 0;
-  let logLengths = 0;
+  let prevElementCnt = prevData.length;
+  console.log(`prevElementCnt: ${prevElementCnt}`);
+  let reusedElementCnt = 0;
+  let createdElementCnt = 0;
 
   let out = prevData.slice();
   data = data || [];
@@ -56,24 +54,11 @@ function analyzeData(prevData, data)
     for (let iME = 0; iME < mediaElements.length; ++iME) {
       let mediaElement = mediaElements[iME];
 
-      let debugLog = {};
-      try {
-        if (mediaElement.debugLogJSON !== undefined) {
-          let debugLogJSON = mediaElement.debugLogJSON || "{}";
-          logLengths += debugLogJSON.length;
-          debugLog = JSON.parse(debugLogJSON);
-          // Remove debugLogJSON from mediaElement, so it doesn't appear in the JSON tree.
-          delete mediaElement.debugLogJSON;
-        }
-      } catch (err) {
-        console.log("Error '" + err.toString() + "' in JSON.parse(debugLogJSON='" + (mediaElement.debugLogJSON || "{}") + "')");
+      let logId = "";
+      if (mediaElement.debugLogId !== undefined) {
+        logId = mediaElement.debugLogId;
+        delete mediaElement.debugLogId;
       }
-
-      const objects = debugLog.objects || {};
-
-      // Object number "1" should be the HTMLMediaElement, use its pointer and
-      // construction timestamp to uniquely identify the element.
-      const logId = objects["1"] ? (objects["1"].ptr + "@" + objects["1"].con_ts.toString()) : "";
 
       // Find the same element in the previous data.
       let oldMediaElement = null;
@@ -103,20 +88,19 @@ function analyzeData(prevData, data)
 
       if (oldMediaElement === null) {
         // Didn't find -> Must be new!
-        created++;
+        createdElementCnt++;
         // The display name is the currentSrc, otherwise the logId, otherwise
         // url+index.
         const index = out.length;
         const name = mediaElement.HTMLMediaElement.currentSrc ||
                      logId ||
                      (url + "#" + index.toString());
-        let messages = debugLog.messages || [];
-        messages.sort((a,b) => a.i < b.i ? -1 : a.i === b.i ? 0 : 1)
         out[index] = {logId: logId, index: index, name: name, alive: true,
                       state: mediaElement,
-                      log: beautifyMessages(messages, objects),
-                      objects: objects};
+                      log: [] // in case we ever add log output to display
+                     };
       } else {
+        reusedElementCnt++;
         // Found the old element, add new data to it.
         // The display name could change (if src changes).
         oldMediaElement.name = mediaElement.HTMLMediaElement.currentSrc ||
@@ -126,24 +110,12 @@ function analyzeData(prevData, data)
         oldMediaElement.alive = true;
         // Completely update the state.
         oldMediaElement.state = mediaElement;
-        // Combine logs.
-        let messages = debugLog.messages || [];
-        if (messages.length !== 0) {
-          reusedWithLog++;
-          // Add log messages and re-sort (as sort messages may be added, that
-          // actually happened before the previous data dump, but they were not
-          // yet associated with this element.)
-          oldMediaElement.log = oldMediaElement.log.concat(beautifyMessages(messages, objects));
-          oldMediaElement.log.sort((a,b) => a.i < b.i ? -1 : a.i === b.i ? 0 : 1)
-        } else {
-          reusedWithoutLog++;
-        }
       }
     }
   }
 
   let end = Date.now();
-  console.log(`analyzed ${logLengths} bytes of logs in ${end - start}ms: before=${before} -> dead=${before-(reusedWithoutLog+reusedWithLog)} reused without new log=${reusedWithoutLog} reused with new log=${reusedWithLog} created=${created}`);
+  console.log(`analyzed data in ${end - start}ms: previous cnt=${prevElementCnt} -> dead cnt=${prevElementCnt-reusedElementCnt} reused cnt=${reusedElementCnt} created cnt=${createdElementCnt}`);
 
   return out;
 }
