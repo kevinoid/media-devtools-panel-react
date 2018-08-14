@@ -210,14 +210,26 @@ function FormatData(data) {
   return out;
 }
 
-function ApiCalls(props) {
-  return(
-    <ReactJson src={ props.data }
-               name={ props.name }
-               collapsed={true}
-               displayObjectSize={false}
-               displayDataTypes={false}
-               enableClipboard={false} />);
+
+class ApiCalls extends React.Component {
+  constructor(props) {
+    super(props);
+    this.expanded = false;
+  }
+
+  render() {
+   if (this.props.expandAll !== undefined) {
+     this.expanded = this.props.expandAll;
+   }
+
+    return(
+      <ReactJson src={ this.props.data }
+                 name={ this.props.name }
+                 collapsed={!this.expanded}
+                 displayObjectSize={false}
+                 displayDataTypes={false}
+                 enableClipboard={false} />);
+  }
 }
 
 
@@ -234,7 +246,7 @@ function PeerConnectionDetails(props) {
       </em>
       <br />
       <br />
-      <ApiCalls data={apiCalls} name={rowId} />
+      <ApiCalls data={apiCalls} name={rowId} expandAll={props.expandAll} />
       <br />
       <br />
       <em>
@@ -267,7 +279,7 @@ function GumDetails(props) {
       </em>
       <br />
       <br />
-      <ApiCalls data={apiCalls} name={rowId} />
+      <ApiCalls data={apiCalls} name={rowId} expandAll={props.expandAll}/>
     </div>
   );
 }
@@ -276,6 +288,8 @@ function GumDetails(props) {
 class PeerConnTable extends React.Component {
   constructor(props) {
     super(props);
+    this.expandedElements = {};
+    this.pageSize = 5;
   }
 
   render() {
@@ -296,6 +310,16 @@ class PeerConnTable extends React.Component {
       }
     ];
 
+    if (this.props.expandAll !== undefined) {
+      if (this.props.expandAll) {
+        this.props.rowData.map((obj, index) => {this.expandedElements[index] = {}});
+        this.pageSize = this.props.rowData.length;
+      } else {
+        this.expandedElements = {};
+        this.pageSize = 5;
+      }
+    }
+
     return(
         <ReactTable
           columns={columns}
@@ -303,6 +327,16 @@ class PeerConnTable extends React.Component {
           collapseOnSortingChange={false}
           collapseOnPageChange={false}
           collapseOnDataChange={false}
+          expanded={this.expandedElements}
+          pageSize={this.pageSize}
+          onExpandedChange={expanded => {
+            this.expandedElements = expanded;
+            this.forceUpdate();
+          }}
+          onPageSizeChange={(pageSize, pageIndex) => {
+            this.pageSize = pageSize;
+            this.forceUpdate();
+          }}
           defaultPageSize={5}
           className="-striped -highlight"
           SubComponent={row => {
@@ -313,9 +347,10 @@ class PeerConnTable extends React.Component {
             return (
               <div style={{ padding: "20px" }}>
                 {row["original"]["name"] === "GUM"
-                 ? <GumDetails rowId={rowId} apiCalls={apiCalls} />
+                 ? <GumDetails rowId={rowId} apiCalls={apiCalls} expandAll={this.props.expandAll}/>
                  : <PeerConnectionDetails rowId={rowId}
                                           apiCalls={apiCalls}
+                                          expandAll={this.props.expandAll}
                                           candidatePairs={candidatePairs}
                                           rtpRtcpStreams={rtpRtcpStreams} />
                 }
@@ -441,9 +476,13 @@ class WebrtcPanelDisplay extends React.Component {
                   refreshCnt:0};
 
     this.refreshNumber = 0;
+    this.saveRequested = false;
 
     // This binding is necessary to make `this` work in callbacks
     this.clearData = this.clearData.bind(this);
+    this.saveData = this.saveData.bind(this);
+    this.expandAll = this.expandAll.bind(this);
+    this.collapseAll = this.collapseAll.bind(this);
   }
 
   requestData() {
@@ -495,7 +534,15 @@ class WebrtcPanelDisplay extends React.Component {
   }
 
   componentDidUpdate() {
-//     console.log(`componentDidUpdate() after ${Date.now() - this.updateStart}ms`);
+    if (this.saveRequested) {
+      this.saveRequested = false;
+      this.props.comms.SaveWebrtc(this._pcsToSave.outerHTML);
+    }
+
+    if (this.state.expandAllElements !== undefined) {
+      this.setState({expandAllElements: undefined});
+      this.forceUpdate();
+    }
   }
 
   clearData() {
@@ -508,6 +555,22 @@ class WebrtcPanelDisplay extends React.Component {
                    refreshCnt:this.refreshNumber});
   }
 
+  collapseAll() {
+    this.setState({expandAllElements: false});
+  }
+
+  expandAll() {
+    this.setState({expandAllElements: true});
+  }
+
+  saveData() {
+    // expanding here doesn't seem to work - it causes some of the
+    // sub-tables (like the candidate pair table to not render in the
+    // saved html).  Expanding manually before save works though.
+    this.saveRequested = true;
+    this.forceUpdate();
+  }
+
   render() {
     let refreshCnt = this.state.refreshCnt;
     let peerConns = this.state.data;
@@ -518,10 +581,17 @@ class WebrtcPanelDisplay extends React.Component {
     return (
       <div width="100%" height="100%" >
         <input type="button" value="Clear History" onClick={this.clearData} />
+        <input type="button" value="Collapse All" onClick={this.collapseAll} />
+        <input type="button" value="Expand All" onClick={this.expandAll} />
+        <input type="button" value="Save" onClick={this.saveData} />
+        please expand all before using save
         <h3>WebRTC Info (refresh cnt { refreshCnt })</h3>
-        <PeerConnTable rowData={ propsDataArr }
-                       candidatePairs={ candidatePairs }
-                       rtpRtcpStreams={ rtpRtcpStreams } />
+        <div ref={(pcsToSave) => this._pcsToSave = pcsToSave}>
+          <PeerConnTable rowData={ propsDataArr }
+                         expandAll={ this.state.expandAllElements }
+                         candidatePairs={ candidatePairs }
+                         rtpRtcpStreams={ rtpRtcpStreams } />
+        </div>
       </div>
     );
   }

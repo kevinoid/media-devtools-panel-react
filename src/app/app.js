@@ -105,6 +105,10 @@ var comms = {
   ClearWebrtc: function()
   {
     port.postMessage({ tabId: tabId, action: 'clear-webrtc-data' });
+  },
+  SaveWebrtc: function(htmlToSave)
+  {
+    port.postMessage({ tabId: tabId, action: 'save-webrtc-data', data: htmlToSave });
   }
 }
 

@@ -27,7 +27,8 @@
 	"permissions": [
 		"tabs",
 		"<all_urls>",
-		"activeTab"
+		"activeTab",
+		"downloads"
 	],
 	"manifest_version": 2
 }
