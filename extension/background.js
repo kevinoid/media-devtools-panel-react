@@ -112,6 +112,7 @@ chrome.runtime.onConnect.addListener(function(port) {
             });
           break;
         case 'get-webrtc':
+console.log("WebrtcRenderer - background - return webrtc info from page");
           port.postMessage({action : 'got-webrtc-info',
                             value : JSON.stringify(webrtc, null, 2)
                            });
@@ -128,10 +129,12 @@ chrome.runtime.onConnect.addListener(function(port) {
     } else if (name === 'webrtc-pc-api'
                && msg.apiMethod === 'getStatsInternal'
                && msg.pcId !== undefined) {
+console.log("WebrtcRenderer - background - servicing getStatsInternal");
       extractCandidatePairs(msg);
       extractRtpRtcpStreams(msg);
     } else if (name === 'webrtc-pc-api'
                && msg.pcId !== undefined) {
+console.log("WebrtcRenderer - background - servicing webrtc-pc-api for PC");
       let peerConns = webrtc['peerConns'];
       if (!peerConns[msg.pcId]) {
         peerConns[msg.pcId] = {};
@@ -142,6 +145,7 @@ chrome.runtime.onConnect.addListener(function(port) {
       peerConns[msg.pcId]['apiCalls'].push(msg);
     } else if (name === 'webrtc-gum-api'
                && msg.pcId !== undefined) {
+console.log("WebrtcRenderer - background - servicing webrtc-pc-api for GUM");
       let gums = webrtc['gums'];
       if (!gums[msg.pcId]) {
         gums[msg.pcId] = {};
