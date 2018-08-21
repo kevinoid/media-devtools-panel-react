@@ -296,6 +296,7 @@ class PeerConnTable extends React.Component {
       }
     ];
 
+console.log("WebrtcRenderer - rendering " + this.props.rowData.length + " PC/GUM rows");
     return(
         <ReactTable
           columns={columns}
@@ -451,11 +452,13 @@ class WebrtcPanelDisplay extends React.Component {
     // Keep a reference to 'this', as it's hidden from then/catch functions.
     let self = this;
 
+console.log("WebrtcRenderer - requesting data");
     this.props.comms.GetWebrtc().then(function(data) {
       if (self.timerId === null) {
         return;
       }
       // need to call a method on self to have access to fields on 'this'
+console.log("WebrtcRenderer - received data");
       self.gotData(data);
     }).catch(function(reason) {
       console.log(`Failed to get data: ${reason.toString()}`);
