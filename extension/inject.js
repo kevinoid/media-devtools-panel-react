@@ -1,13 +1,16 @@
 var inject = '('+function() {
   function trace(method, id, args) {
+console.log("WebrtcRenderer - inject - trace WebRTC-Func " + method);
     window.postMessage(['WebRTC-Func', id, method, JSON.stringify(args || {})], '*');
   }
 
   function traceProp(method, id, args) {
+console.log("WebrtcRenderer - inject - trace WebRTC-Prop " + method);
     window.postMessage(['WebRTC-Prop', id, method, JSON.stringify(args || {})], '*');
   }
 
   function traceGum(method, id, args) {
+console.log("WebrtcRenderer - inject - trace WebRTC-Gum " + method);
     window.postMessage(['WebRTC-Gum', id, method, JSON.stringify(args || {})], '*');
   }
 
@@ -24,7 +27,9 @@ var inject = '('+function() {
     return o;
   }
 
+console.log("WebrtcRenderer - Inject script running");
   if (!window.RTCPeerConnection) {
+console.warn("WebrtcRenderer - Unable to find window.RTCPeerConnection");
     return; // can happen e.g. when peerconnection is disabled in Firefox.
   }
 
@@ -197,6 +202,7 @@ var inject = '('+function() {
     };
     navigator.mediaDevices.getUserMedia = gum.bind(navigator.mediaDevices);
   }
+console.log("WebrtcRenderer - Inject script done");
 }+')();';
 
 document.addEventListener('DOMContentLoaded', function() {
