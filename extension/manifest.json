@@ -1,7 +1,7 @@
 {
 	"name": "Media Panel",
 	"short_name": "Media",
-	"version": "2.4",
+	"version": "2.5",
 	"author": "Karolien Koorts, Gerald Squelart, Michael Froman",
 	"applications": {
 		"gecko": {
