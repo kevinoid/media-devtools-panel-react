@@ -79,6 +79,39 @@ var inject = '('+function() {
         });
       }, 1000);
 
+      function createProxyForMember(pc, key) {
+        const member = pc[key];
+        return new Proxy(member, {
+          apply(func, thisArg, argumentsList) {
+            // if this is the proxy at the top of the chain (most recently created), trace its operation
+            // the original proxy might be replaced if someone overrides the function
+            if (this === pc._fnProxies[key]) {
+              trace(key, pc._id, argumentsList);
+              // We special case createOffer and createAnswer because we
+              // want to record the results of the promise.  We build a
+              // new promise to wrap the output of the
+              // createOffer/createAnswer call and then call resolve or
+              // reject based on the result of the original promise.
+              if (key == 'createOffer' || key == 'createAnswer') {
+                return new Promise(function(resolve, reject) {
+                  func.apply(pc, argumentsList)
+                    .then(result => {
+                            trace(key + 'OnSuccess', pc._id, result);
+                            resolve(result);
+                          },
+                          error => {
+                            trace(key + 'OnFailure', pc._id, error.toString());
+                            reject(error);
+                          });
+                });
+              }
+            }
+
+            return func.apply(pc, argumentsList);
+          }
+        });
+      }
+
       // Now that we've created a RTCPeerConnection and added listeners for
       // common events, we wrap the RTCPeerConnection in a proxy that tracks
       // get and set operations which includes getting functions to execute.
@@ -95,37 +128,20 @@ var inject = '('+function() {
 
           // if we've already built a proxy for this method, use it
           // otherwise, build a new proxy for this method
+
           let memberProxy = pc._fnProxies[key] ||
-                            (pc._fnProxies[key] = new Proxy(member, {
-            apply(func, thisArg, argumentsList) {
-              trace(key, pc._id, argumentsList);
-              // We special case createOffer and createAnswer because we
-              // want to record the results of the promise.  We build a
-              // new promise to wrap the output of the
-              // createOffer/createAnswer call and then call resolve or
-              // reject based on the result of the original promise.
-              if (key == 'createOffer' || key == 'createAnswer') {
-                 return new Promise(function(resolve, reject) {
-                  func.apply(pc, argumentsList)
-                    .then(result => {
-                            trace(key + 'OnSuccess', pc._id, result);
-                            resolve(result);
-                          },
-                          error => {
-                            trace(key + 'OnFailure', pc._id, error.toString());
-                            reject(error);
-                          });
-                });
-              }
-
-              return func.apply(pc, argumentsList);
-            }
-          }));
-
-          return memberProxy
+                            (pc._fnProxies[key] = createProxyForMember(pc, key));
+          return memberProxy;
         },
 
         set(pc, key, value) {
+          // replace the existing proxy if overriding a function with an existing proxy
+          // in the proxy, it will only trace the operation if it is the most recently
+          // created proxy for the function
+          if (pc._fnProxies[key]) {
+            pc._fnProxies[key] = createProxyForMember(pc, key);
+          }
+
           pc[key] = value;
           return true;
         }
