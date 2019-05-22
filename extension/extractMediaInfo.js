@@ -180,20 +180,25 @@
       if ("mozRequestDebugInfo" in v) {
         const waitForMediaElementInfo =
           v.mozRequestDebugInfo().then(debugInfo => {
-            try {
-              debugInfo = debugInfo.replace(/\t/g, '').split(/\n/g);
-
-              var JSONDebugInfo = "{";
-              for(let g =0; g<debugInfo.length-1; g++){
-                var pair = debugInfo[g].split(": ");
-                JSONDebugInfo += '"' + pair[0] + '":"' + pair[1] + '",';
+            if (typeof debugInfo === "string" || debugInfo instanceof String) {
+              // backward compatibility. The new version, is now a JSON object
+              // see https://bugzilla.mozilla.org/show_bug.cgi?id=1542674
+              try {
+                debugInfo = debugInfo.replace(/\t/g, '').split(/\n/g);
+                var JSONDebugInfo = "{";
+                for(let g =0; g<debugInfo.length-1; g++){
+                  var pair = debugInfo[g].split(": ");
+                  JSONDebugInfo += '"' + pair[0] + '":"' + pair[1] + '",';
+                }
+                JSONDebugInfo = JSONDebugInfo.slice(0,JSONDebugInfo.length-1);
+                JSONDebugInfo += "}";
+                mediaElementInfo.debugInfo = JSON.parse(JSONDebugInfo);
+              } catch (err) {
+                console.log(`Error '${err.toString()} in JSON.parse(${JSONDebugInfo})`);
+                mediaElementInfo.debugInfo = JSONDebugInfo;
               }
-              JSONDebugInfo = JSONDebugInfo.slice(0,JSONDebugInfo.length-1);
-              JSONDebugInfo += "}";
-              mediaElementInfo.debugInfo = JSON.parse(JSONDebugInfo);
-            } catch (err) {
-              console.log(`Error '${err.toString()} in JSON.parse(${JSONDebugInfo})`);
-              mediaElementInfo.debugInfo = JSONDebugInfo;
+            } else {
+              mediaElementInfo.debugInfo = debugInfo;
             }
           });
 
