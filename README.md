@@ -24,5 +24,7 @@ Instructions for installing manually:
 6. Open any file in this directory
 7. There should be a new 'Media Panel' addon listed under 'Extensions'
 8. Navigate to page with video element and/or webrtc and open developer tools (F12)
+    1. For video: try https://youtube.com
+    2. For webrtc: https://webrtc.github.io/samples/src/content/peerconnection/pc1/
 9. There should be a new 'Media-Webrtc' tab
 
