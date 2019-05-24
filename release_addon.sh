@@ -5,5 +5,10 @@ VERSION_NUM=`grep "\"version\"\:" extension/manifest.json | egrep -o ": \"(.*)\"
 echo "current directory: $CWD"
 echo "version num: $VERSION_NUM"
 
+echo "running browserify for release..."
+./browserify_production.sh
+echo "done running browserify"
+echo "creating zip file for release..."
 cd extension && zip -r -FS ../../dev-tools-media-$VERSION_NUM.zip *
+echo "done"
 
