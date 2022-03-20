@@ -215,12 +215,18 @@ var inject = '('+function() {
   }
 }+')();';
 
-document.addEventListener('DOMContentLoaded', function() {
-    var script = document.createElement('script');
-    script.textContent = inject;
-    (document.head||document.documentElement).appendChild(script);
-    script.parentNode.removeChild(script);
-});
+// Exclude non-(X)HTML documents to avoid breaking Firefox XML pretty printing
+// See https://bugzilla.mozilla.org/1605657
+if (document.contentType === 'text/html' ||
+    document.contentType === 'application/xhtml+xml' ||
+    document.documentElement.namespaceURI === 'http://www.w3.org/1999/xhtml') {
+    document.addEventListener('DOMContentLoaded', function() {
+        var script = document.createElement('script');
+        script.textContent = inject;
+        (document.head||document.documentElement).appendChild(script);
+        script.parentNode.removeChild(script);
+    });
+}
 
 if (typeof browser === 'undefined') {
     browser = chrome;
